@@ -1,7 +1,7 @@
 import java.lang.Cloneable;
 import java.lang.String;
 import java.util.Properties;
-
+import java.util.Set;
 
 public class Event implements Cloneable
 {
@@ -28,6 +28,11 @@ public class Event implements Cloneable
         return new String(this.category);
     }
 
+    public Set<String> getPropertyNames()
+    {
+        return this.properties.keySet();
+    }
+
     public Event getClone()
     {
         try {
@@ -37,5 +42,21 @@ public class Event implements Cloneable
             System.out.println("Clonagem não suportada na classe Event");
             return null;
         }
+    }
+
+    protected Object clone()
+    {
+        Event clone = new Event();
+        clone.category = new String(this.category);
+        clone.properties = new Properties(this.properties);
+        /*
+        Iterator<String> iterator = this.getPropertyNames().iterator();
+        while (iterator.hasNext()) {
+            String property = iterator.next();
+            clone.set(property, this.get(property));
+        }
+        */
+
+        return (Object) clone;
     }
 }

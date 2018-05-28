@@ -14,8 +14,22 @@ public class TreeBranch
         this.events = new ArrayList<Event>();
     }
 
-    public addEvent(Event event)
+    public void addEvent(Event event)
     {
         this.events.add(event);
+    }
+
+    public void addEvents(List<Event> events)
+    {
+        Iterator<Event> iterator = events.iterator();
+        while (iterator.hasNext()) {
+            Event current = iterator.next();
+            this.events.add(current.getClone());
+        }
+    }
+
+    public void setNode(TreeNode node)
+    {
+        this.node = node;
     }
 }
