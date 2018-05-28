@@ -1,17 +1,24 @@
+package tree;
+
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class TreeBranch
+import models.Event;
+
+public class Branch
 {
     protected String value;
     protected List<Event> events;
-    protected TreeNode node;
+    protected Node node;
+    protected String majorCategory;
 
-    public TreeBranch(String value)
+    public Branch(String value)
     {
         this.value = value;
         this.events = new ArrayList<Event>();
+        this.majorCategory = null;
     }
 
     public void addEvent(Event event)
@@ -28,8 +35,28 @@ public class TreeBranch
         }
     }
 
-    public void setNode(TreeNode node)
+    public void setNode(Node node)
     {
         this.node = node;
+    }
+
+    public Node getNode()
+    {
+        return this.node;
+    }
+
+    public void setMajorCategory(String category)
+    {
+        this.majorCategory = category;
+    }
+
+    public String getMajorCategory()
+    {
+        return this.majorCategory;
+    }
+
+    public String getValue()
+    {
+        return this.value;
     }
 }

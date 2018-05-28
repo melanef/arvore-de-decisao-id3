@@ -1,5 +1,8 @@
+package models;
+
 import java.lang.Cloneable;
 import java.lang.String;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -11,6 +14,19 @@ public class Event implements Cloneable
     protected Event()
     {
         this.properties = new Properties();
+    }
+
+    public String toString()
+    {
+        String propertiesString = "";
+
+        Iterator<String> iterator = this.getPropertyNames().iterator();
+        while (iterator.hasNext()) {
+            String property = iterator.next();
+            propertiesString = propertiesString + property + "=" + this.get(property) + ",";
+        }
+
+        return "{" + propertiesString + "}" + " => " + this.category;
     }
 
     public String get(String property)
@@ -30,18 +46,12 @@ public class Event implements Cloneable
 
     public Set<String> getPropertyNames()
     {
-        return this.properties.keySet();
+        return this.properties.stringPropertyNames();
     }
 
     public Event getClone()
     {
-        try {
-            return (Event) this.clone();
-        }
-        catch (CloneNotSupportedException exception) {
-            System.out.println("Clonagem não suportada na classe Event");
-            return null;
-        }
+        return (Event) this.clone();
     }
 
     protected Object clone()
@@ -58,5 +68,16 @@ public class Event implements Cloneable
         */
 
         return (Object) clone;
+    }
+
+    public static Event createEvent(String [] data, String [] fields)
+    {
+        Event newEvent = new Event();
+        newEvent.category = data[data.length - 1];
+        for (int i = 0; i < fields.length; i++) {
+            newEvent.properties.setProperty(fields[i], data[i]);
+        }
+
+        return newEvent;
     }
 }

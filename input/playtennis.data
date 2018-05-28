@@ -1,0 +1,14 @@
+sol, quente, alta, fraco, não
+sol, quente, alta, forte, não
+nublado, quente, alta, fraco, sim
+chuva, mediana, alta, fraco, sim
+chuva, frio, normal, fraco, sim
+chuva, frio, normal, forte, não
+nublado, frio, normal, forte, sim
+sol, mediana, alta, fraco, não
+sol, frio, normal, fraco, sim
+chuva, mediana, normal, fraco, sim
+sol, mediana, normal, forte, sim
+nublado, mediana, alta, forte, sim
+nublado, quente, normal, fraco, sim
+chuva, mediana, alta, forte, não

@@ -4,33 +4,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.Iterator;
 
-public class Adult
+import models.Event;
+import utils.ID3;
+
+public class PlayTennis
 {
     public static final String SEPARATOR = ", ";
     public static final String [] FIELDS = {
-        "age",
-        "workclass",
-        "fnlwgt",
-        "education",
-        "education-num",
-        "marital-status",
-        "occupation",
-        "relationship",
-        "race",
-        "sex",
-        "capital-gain",
-        "capital-loss",
-        "hours-per-week",
-        "native-country",
-    };
-    public static final String [] CONTINUOUS_FIELDS = {
-        "age",
-        "fnlwgt",
-        "education-num",
-        "capital-gain",
-        "capital-loss",
-        "hours-per-week",
+        "tempo",
+        "temperatura",
+        "umidade",
+        "vento",
     };
     public static ArrayList<String []> grossData = new ArrayList<String[]>();
     public static ArrayList<Event> sample = new ArrayList<Event>();
@@ -42,7 +28,11 @@ public class Adult
             return;
         }
 
-        Main.readInput(args[0]);
+        PlayTennis.readInput(args[0]);
+        ID3 builder = new ID3("PlayTennis");
+        builder.setSample(PlayTennis.sample);
+        builder.buildTree();
+        PlayTennis.printRules(builder);
     }
 
     public static void readInput(String filepath)
@@ -52,13 +42,11 @@ public class Adult
             String line;
             String [] parts;
             while ((line = reader.readLine()) != null) {
-                parts = line.split(Main.SEPARATOR);
+                parts = line.split(PlayTennis.SEPARATOR);
 
-                Main.grossData.add(parts);
-                //Main.addToSample(parts);
+                PlayTennis.grossData.add(parts);
+                PlayTennis.addToSample(parts);
             }
-
-
         }
         catch(FileNotFoundException exception) {
             System.out.println("Arquivo de dados não encontrado");
@@ -70,14 +58,14 @@ public class Adult
 
     public static void addToSample(String [] eventData)
     {
-        if (Main.isValidEvent(eventData)) {
-            Main.sample.add(Main.createEvent(eventData));
+        if (PlayTennis.isValidEvent(eventData)) {
+            PlayTennis.sample.add(Event.createEvent(eventData, PlayTennis.FIELDS));
         }
     }
 
     public static boolean isValidEvent(String [] eventData)
     {
-        if (eventData.length < 15) {
+        if (eventData.length < (PlayTennis.FIELDS.length + 1)) {
             return false;
         }
 
@@ -90,8 +78,12 @@ public class Adult
         return true;
     }
 
-    public static Event createEvent(String [] eventData)
+    public static void printRules(ID3 built)
     {
-
+        ArrayList<String> rules = built.getRules();
+        Iterator<String> iterator = rules.iterator();
+        while (iterator.hasNext()) {
+            System.out.println(iterator.next());
+        }
     }
 }
