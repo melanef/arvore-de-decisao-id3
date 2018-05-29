@@ -6,37 +6,18 @@ import java.util.Iterator;
 import java.util.List;
 
 import models.Event;
+import models.Sample;
 
 public class Branch
 {
     protected String value;
-    protected List<Event> events;
+    protected Sample sample;
     protected Node node;
-    protected String majorCategory;
 
-    public Branch(String value)
+    public Branch(String value, Sample sample, Node node)
     {
         this.value = value;
-        this.events = new ArrayList<Event>();
-        this.majorCategory = null;
-    }
-
-    public void addEvent(Event event)
-    {
-        this.events.add(event);
-    }
-
-    public void addEvents(List<Event> events)
-    {
-        Iterator<Event> iterator = events.iterator();
-        while (iterator.hasNext()) {
-            Event current = iterator.next();
-            this.events.add(current.getClone());
-        }
-    }
-
-    public void setNode(Node node)
-    {
+        this.sample = new Sample(sample);
         this.node = node;
     }
 
@@ -45,14 +26,9 @@ public class Branch
         return this.node;
     }
 
-    public void setMajorCategory(String category)
-    {
-        this.majorCategory = category;
-    }
-
     public String getMajorCategory()
     {
-        return this.majorCategory;
+        return this.sample.getMajorCategory();
     }
 
     public String getValue()

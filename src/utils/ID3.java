@@ -7,47 +7,43 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
 
 import models.Event;
+import models.Sample;
 import tree.Node;
 
 public class ID3
 {
     public final static double LOG2 = Math.log(2.0);
-    protected List<Event> sample;
+    protected Sample sample;
     protected Node root;
     protected String categoryName;
-    protected String majorCategory;
 
     public ID3(String categoryName)
     {
-        this.sample = new ArrayList<Event>();
+        this.sample = null;
         this.categoryName = categoryName;
-        this.majorCategory = null;
         this.root = null;
     }
 
-    public void setSample(List<Event> sample)
+    public ID3(String categoryName, Sample sample)
     {
-        Iterator<Event> iterator = sample.iterator();
-        while (iterator.hasNext()) {
-            Event current = iterator.next();
-            this.sample.add(current.getClone());
-        }
+        this(categoryName);
+        this.setSample(sample);
+    }
 
-        this.majorCategory = ID3.getMajorCategory(this.sample);
+    public void setSample(Sample sample)
+    {
+        this.sample = sample;
     }
 
     public void buildTree()
     {
-        Set<String> fields = this.sample.get(0).getPropertyNames();
-        this.root = ID3.buildSubTree(this.sample, fields);
+        this.root = ID3.buildSubTree(this.sample, this.sample.getFieldList());
     }
 
-    public static Node buildSubTree(List<Event> sample, Set<String> fields)
+    public static Node buildSubTree(Sample sample, List<String> fields)
     {
         Node root = null;
 
@@ -55,7 +51,7 @@ public class ID3
             return root;
         }
 
-        if (ID3.sampleHasSingleCategory(sample)) {
+        if (sample.hasSingleCategory()) {
             return root;
         }
 
@@ -72,7 +68,7 @@ public class ID3
             }
         }
 
-        Set<String> remainingFields = new TreeSet<String>();
+        List<String> remainingFields = new ArrayList<String>();
         fieldIterator = fields.iterator();
         while (fieldIterator.hasNext()) {
             String currentField = fieldIterator.next();
@@ -82,11 +78,11 @@ public class ID3
         }
 
         root = new Node(biggestGainField);
-        HashMap<String, ArrayList<Event>> rootSubsets = ID3.buildSubsets(sample, biggestGainField);
+        HashMap<String, Sample> rootSubsets = sample.buildSubsets(biggestGainField);
         Iterator<String> subsetIterator = rootSubsets.keySet().iterator();
         while (subsetIterator.hasNext()) {
             String currentKey = subsetIterator.next();
-            List<Event> subset = rootSubsets.get(currentKey);
+            Sample subset = rootSubsets.get(currentKey);
             root.assignNewBranch(currentKey, subset, ID3.buildSubTree(subset, remainingFields));
         }
 
@@ -97,7 +93,7 @@ public class ID3
     {
         ArrayList<String> rules = new ArrayList<String>();
         if (this.root == null) {
-            String rule = this.categoryName + " = " + this.majorCategory;
+            String rule = this.categoryName + " = " + this.getMajorCategory();
             rules.add(rule);
 
             return rules;
@@ -108,10 +104,9 @@ public class ID3
         return rules;
     }
 
-    public static double entropy(List<Event> sample)
+    public static double entropy(Sample sample)
     {
         HashMap<String, Integer> frequencies = new HashMap<String, Integer>();
-        ArrayList<String> frequencyKeys = new ArrayList<String>();
 
         Iterator<Event> eventIterator = sample.iterator();
         while (eventIterator.hasNext()) {
@@ -119,7 +114,6 @@ public class ID3
             String currentCategory = currentEvent.getCategory();
             if (!frequencies.containsKey(currentCategory)) {
                 frequencies.put(currentCategory, new Integer(0));
-                frequencyKeys.add(currentCategory);
             }
 
             frequencies.put(
@@ -129,7 +123,7 @@ public class ID3
         }
 
         double entropy = 0.0;
-        Iterator<String> frequencyIterator = frequencyKeys.iterator();
+        Iterator<String> frequencyIterator = frequencies.keySet().iterator();
         while (frequencyIterator.hasNext()) {
             String currentKey = frequencyIterator.next();
             double currentFrequency = frequencies.get(currentKey).doubleValue() / (new Integer(sample.size())).doubleValue();
@@ -139,17 +133,17 @@ public class ID3
         return entropy;
     }
 
-    public static double gain(List<Event> sample, String property)
+    public static double gain(Sample sample, String property)
     {
         double gain = ID3.entropy(sample);
 
-        HashMap<String, ArrayList<Event>> subsets = ID3.buildSubsets(sample, property);
+        HashMap<String, Sample> subsets = sample.buildSubsets(property);
 
         Iterator<String> subsetIterator = subsets.keySet().iterator();
         while (subsetIterator.hasNext()) {
             String currentKey = subsetIterator.next();
 
-            ArrayList<Event> currentSubset = subsets.get(currentKey);
+            Sample currentSubset = subsets.get(currentKey);
             double currentSubsetGain = ((new Integer(currentSubset.size())).doubleValue() / (new Integer(sample.size())).doubleValue()) * ID3.entropy(currentSubset);
             gain = gain - currentSubsetGain;
         }
@@ -157,66 +151,8 @@ public class ID3
         return gain;
     }
 
-    public static HashMap<String, ArrayList<Event>> buildSubsets(List<Event> sample, String property)
+    public String getMajorCategory()
     {
-        HashMap<String, ArrayList<Event>> subsets = new HashMap<String, ArrayList<Event>>();
-
-        Iterator<Event> eventIterator = sample.iterator();
-        while (eventIterator.hasNext()) {
-            Event currentEvent = eventIterator.next();
-            String currentPropertyValue = currentEvent.get(property);
-            if (!subsets.containsKey(currentPropertyValue)) {
-                subsets.put(currentPropertyValue, new ArrayList<Event>());
-            }
-
-            subsets.get(currentPropertyValue).add(currentEvent.getClone());
-        }
-
-        return subsets;
-    }
-
-    public static String getMajorCategory(List<Event> sample)
-    {
-        HashMap<String, Integer> categories = new HashMap<String, Integer>();
-        Iterator<Event> iterator = sample.iterator();
-        while (iterator.hasNext()) {
-            Event current = iterator.next();
-            String key = current.getCategory();
-            if (!categories.containsKey(key)) {
-                categories.put(key, new Integer(0));
-            }
-
-            categories.put(key, new Integer(categories.get(key).intValue() + 1));
-        }
-
-        int biggest = 0;
-        String biggestKey = "";
-        Set<String> keys = categories.keySet();
-        Iterator<String> keyIterator = keys.iterator();
-        while (keyIterator.hasNext()) {
-            String key = keyIterator.next();
-            int current = categories.get(key).intValue();
-            if (current > biggest) {
-                biggest = current;
-                biggestKey = new String(key);
-            }
-        }
-
-        return biggestKey;
-    }
-
-    public static boolean sampleHasSingleCategory(List<Event> sample)
-    {
-        String category = sample.get(0).getCategory();
-        Iterator<Event> iterator = sample.iterator();
-        while (iterator.hasNext()) {
-            Event currentEvent = iterator.next();
-            String currentCategory = currentEvent.getCategory();
-            if (!category.equals(currentCategory)) {
-                return false;
-            }
-        }
-
-        return true;
+        return this.sample.getMajorCategory();
     }
 }

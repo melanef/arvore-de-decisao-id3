@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import models.Event;
+import models.Sample;
 import utils.ID3;
 
 public class PlayTennis
@@ -18,8 +19,8 @@ public class PlayTennis
         "umidade",
         "vento",
     };
-    public static ArrayList<String []> grossData = new ArrayList<String[]>();
-    public static ArrayList<Event> sample = new ArrayList<Event>();
+
+    public static Sample sample = new Sample(PlayTennis.FIELDS);
 
     public static void main(String [] args)
     {
@@ -40,12 +41,8 @@ public class PlayTennis
         try {
             BufferedReader reader = new BufferedReader(new FileReader(filepath));
             String line;
-            String [] parts;
             while ((line = reader.readLine()) != null) {
-                parts = line.split(PlayTennis.SEPARATOR);
-
-                PlayTennis.grossData.add(parts);
-                PlayTennis.addToSample(parts);
+                PlayTennis.sample.addEvent(line.split(PlayTennis.SEPARATOR));
             }
         }
         catch(FileNotFoundException exception) {
@@ -54,28 +51,6 @@ public class PlayTennis
         catch (IOException exception) {
             System.out.println("Erro na leitura do arquivo de dados");
         }
-    }
-
-    public static void addToSample(String [] eventData)
-    {
-        if (PlayTennis.isValidEvent(eventData)) {
-            PlayTennis.sample.add(Event.createEvent(eventData, PlayTennis.FIELDS));
-        }
-    }
-
-    public static boolean isValidEvent(String [] eventData)
-    {
-        if (eventData.length < (PlayTennis.FIELDS.length + 1)) {
-            return false;
-        }
-
-        for (int i = 0; i < eventData.length; i++) {
-            if (eventData[i].equals("?")) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public static void printRules(ID3 built)

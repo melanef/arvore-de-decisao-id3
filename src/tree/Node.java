@@ -9,6 +9,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 
 import models.Event;
+import models.Sample;
 import utils.ID3;
 
 public class Node
@@ -27,17 +28,9 @@ public class Node
         this.branches.add(branch);
     }
 
-    public void assignNewBranch(String value, List<Event> events, Node node)
+    public void assignNewBranch(String value, Sample sample, Node node)
     {
-        Branch newBranch = new Branch(value);
-        newBranch.addEvents(events);
-        newBranch.setNode(node);
-
-        String majorCategory = ID3.getMajorCategory(events);
-        if (majorCategory != null) {
-            newBranch.setMajorCategory(majorCategory);
-        }
-
+        Branch newBranch = new Branch(value, sample, node);
         this.add(newBranch);
     }
 

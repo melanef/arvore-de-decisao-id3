@@ -16,6 +16,21 @@ public class Event implements Cloneable
         this.properties = new Properties();
     }
 
+    public Event(String [] fields, String [] data)
+    {
+        this();
+        this.category = data[data.length - 1];
+        for (int i = 0; i < fields.length; i++) {
+            this.properties.setProperty(fields[i], data[i]);
+        }
+    }
+
+    public Event(Event example)
+    {
+        this.properties = example.getProperties();
+        this.category = new String(example.getCategory());
+    }
+
     public String toString()
     {
         String propertiesString = "";
@@ -49,35 +64,11 @@ public class Event implements Cloneable
         return this.properties.stringPropertyNames();
     }
 
-    public Event getClone()
+    public Properties getProperties()
     {
-        return (Event) this.clone();
-    }
+        Properties copy = new Properties();
+        copy.putAll(this.properties);
 
-    protected Object clone()
-    {
-        Event clone = new Event();
-        clone.category = new String(this.category);
-        clone.properties = new Properties(this.properties);
-        /*
-        Iterator<String> iterator = this.getPropertyNames().iterator();
-        while (iterator.hasNext()) {
-            String property = iterator.next();
-            clone.set(property, this.get(property));
-        }
-        */
-
-        return (Object) clone;
-    }
-
-    public static Event createEvent(String [] data, String [] fields)
-    {
-        Event newEvent = new Event();
-        newEvent.category = data[data.length - 1];
-        for (int i = 0; i < fields.length; i++) {
-            newEvent.properties.setProperty(fields[i], data[i]);
-        }
-
-        return newEvent;
+        return copy;
     }
 }
