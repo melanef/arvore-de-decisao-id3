@@ -1,6 +1,8 @@
-package tree;
+package comparators;
 
 import java.util.Comparator;
+
+import tree.Branch;
 
 public class BranchComparator implements Comparator<Branch>
 {

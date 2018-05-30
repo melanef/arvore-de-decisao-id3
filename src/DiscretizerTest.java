@@ -8,37 +8,20 @@ import java.util.Iterator;
 
 import models.Event;
 import models.Sample;
+import utils.Discretizer;
 import utils.ID3;
 
-public class Adult
+public class DiscretizerTest
 {
     public static final String SEPARATOR = ", ";
     public static final String [] FIELDS = {
         "age",
-        "workclass",
-        "fnlwgt",
-        "education",
-        "education-num",
-        "marital-status",
-        "occupation",
-        "relationship",
-        "race",
-        "sex",
-        "capital-gain",
-        "capital-loss",
-        "hours-per-week",
-        "native-country",
     };
     public static final String [] CONTINUOUS_FIELDS = {
         "age",
-        "fnlwgt",
-        "education-num",
-        "capital-gain",
-        "capital-loss",
-        "hours-per-week",
     };
 
-    public static Sample sample = new Sample(Adult.FIELDS);
+    public static Sample sample = new Sample(DiscretizerTest.FIELDS);
 
     public static void main(String [] args)
     {
@@ -47,25 +30,12 @@ public class Adult
             return;
         }
 
-        Adult.readInput(args[0]);
-        ID3 builder = new ID3("Income");
+        DiscretizerTest.readInput(args[0]);
+        ID3 builder = new ID3("Age");
 
-        /*
-        for (int i = 0; i < Adult.CONTINUOUS_FIELDS.length; i++) {
-        */
-        int i = 0;
-            Adult.sample = Discretizer.discretize(Adult.sample, Adult.CONTINUOUS_FIELDS[i]);
-        /*
-        }
-        */
+        DiscretizerTest.sample = Discretizer.discretizeProperty(DiscretizerTest.sample, DiscretizerTest.CONTINUOUS_FIELDS[0]);
 
-        System.out.println(sample);
-
-        /*
-        builder.setSample(Adult.sample);
-        builder.buildTree();
-        Adult.printRules(builder);
-        */
+        System.out.println(DiscretizerTest.sample);
     }
 
     public static void readInput(String filepath)
@@ -74,7 +44,7 @@ public class Adult
             BufferedReader reader = new BufferedReader(new FileReader(filepath));
             String line;
             while ((line = reader.readLine()) != null) {
-                Adult.sample.addEvent(line.split(Adult.SEPARATOR));
+                DiscretizerTest.sample.addEvent(line.split(DiscretizerTest.SEPARATOR));
             }
         }
         catch(FileNotFoundException exception) {

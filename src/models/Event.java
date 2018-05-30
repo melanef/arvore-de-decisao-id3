@@ -1,6 +1,7 @@
 package models;
 
 import java.lang.Cloneable;
+import java.lang.Comparable;
 import java.lang.String;
 import java.util.Iterator;
 import java.util.Properties;

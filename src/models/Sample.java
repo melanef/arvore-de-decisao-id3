@@ -54,14 +54,31 @@ public class Sample
         return this.events.iterator();
     }
 
-    public List<Event> getEvents()
+    public String toString()
     {
-        return this.events;
+        String out = "{";
+        Iterator<Event> iterator = this.iterator();
+        while (iterator.hasNext()) {
+            out = out + iterator.next().toString();
+
+            if (iterator.hasNext()) {
+                out = out + ", ";
+            }
+        }
+
+        out = out + " -- Major category: " + this.getMajorCategory() + "}";
+
+        return out;
     }
 
     public Event getEvent(int index)
     {
         return this.events.get(index);
+    }
+
+    public List<Event> getEvents()
+    {
+        return new ArrayList<Event>(this.events);
     }
 
     public void addEvent(String [] eventData)

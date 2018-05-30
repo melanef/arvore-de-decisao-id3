@@ -93,7 +93,7 @@ public class ID3
     {
         ArrayList<String> rules = new ArrayList<String>();
         if (this.root == null) {
-            String rule = this.categoryName + " = " + this.getMajorCategory();
+            String rule = this.categoryName + ": " + this.sample.getMajorCategory();
             rules.add(rule);
 
             return rules;
@@ -149,10 +149,5 @@ public class ID3
         }
 
         return gain;
-    }
-
-    public String getMajorCategory()
-    {
-        return this.sample.getMajorCategory();
     }
 }

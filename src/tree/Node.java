@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
+import comparators.BranchComparator;
 import models.Event;
 import models.Sample;
 import utils.ID3;
@@ -62,7 +63,7 @@ public class Node
                     stackedRule = "(" + currentRules.pop() + ") ^ " + stackedRule;
                 }
 
-                rule = rule + " " + stackedRule + " THEN " + categoryName + "=" + current.getMajorCategory();
+                rule = rule + " " + stackedRule + " THEN " + categoryName + ": " + current.getMajorCategory();
                 rules.add(rule);
                 continue;
             }
