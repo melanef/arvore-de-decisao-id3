@@ -13,24 +13,6 @@ import models.Sample;
 
 public class Discretizer
 {
-    public Discretizer(Sample sample, String [] fields, String [] continuousFields)
-    {
-        for (int i = 0; i < fields.length; i++) {
-            boolean continuous = false;
-
-            for (int j = 0; j < continuousFields.length; j++) {
-                if (fields[i].equals(continuousFields[j])) {
-                    continuous = true;
-                    break;
-                }
-            }
-
-            if (!continuous) {
-                continue;
-            }
-        }
-    }
-
     public static Sample discretizeProperty(Sample sample, String property)
     {
         ArrayList<Double> breakpoints = new ArrayList<Double>();

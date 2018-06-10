@@ -36,13 +36,13 @@ public class Interval
     public String toString()
     {
         if (this.lowerEdge == null) {
-            return "Até " + this.upperEdge.toString();
+            return "< " + this.upperEdge.toString();
         }
 
         if (this.upperEdge == null) {
-            return "A partir de " + this.lowerEdge.toString();
+            return "> " + this.lowerEdge.toString();
         }
 
-        return this.lowerEdge.toString() + "-" + this.upperEdge.toString();
+        return this.lowerEdge.toString() + " <= x <= " + this.upperEdge.toString();
     }
 }

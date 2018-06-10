@@ -26,6 +26,25 @@ public class Event implements Cloneable
         }
     }
 
+    public boolean equals(Object o)
+    {
+        if (o instanceof Event) {
+            Event e = (Event) o;
+            Iterator<String> iterator = this.getPropertyNames().iterator();
+            while (iterator.hasNext()) {
+                String property = iterator.next();
+
+                if (!this.get(property).equals(e.get(property))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public Event(Event example)
     {
         this.properties = example.getProperties();
@@ -39,10 +58,14 @@ public class Event implements Cloneable
         Iterator<String> iterator = this.getPropertyNames().iterator();
         while (iterator.hasNext()) {
             String property = iterator.next();
-            propertiesString = propertiesString + property + "=" + this.get(property) + ",";
+            propertiesString = propertiesString + property + "=" + this.get(property);
+
+            if (iterator.hasNext()) {
+                 propertiesString = propertiesString + ",";
+            }
         }
 
-        return "{" + propertiesString + "}" + " => " + this.category;
+        return "    {" + propertiesString + "}" + " => " + this.category + "\n";
     }
 
     public String get(String property)

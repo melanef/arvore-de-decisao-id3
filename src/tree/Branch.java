@@ -21,18 +21,34 @@ public class Branch
         this.node = node;
     }
 
+    public Branch(Branch branch)
+    {
+        this.value = branch.getValue();
+        this.sample = branch.getSample();
+        this.node = branch.getNode();
+    }
+
     public Node getNode()
     {
-        return this.node;
+        if (this.node == null) {
+            return null;
+        }
+
+        return new Node(this.node);
     }
 
     public String getMajorCategory()
     {
-        return this.sample.getMajorCategory();
+        return new String(this.sample.getMajorCategory());
     }
 
     public String getValue()
     {
-        return this.value;
+        return new String(this.value);
+    }
+
+    public Sample getSample()
+    {
+        return new Sample(this.sample);
     }
 }

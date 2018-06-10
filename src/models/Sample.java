@@ -6,12 +6,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Sample
 {
     protected String [] fields;
     protected List<Event> events;
-    protected List<String []> grossData;
     protected String majorCategory;
 
     public Sample(String [] fields)
@@ -49,6 +50,10 @@ public class Sample
         return this.events.size();
     }
 
+    public boolean contains(Event event) {
+        return this.events.contains(event);
+    }
+
     public Iterator<Event> iterator()
     {
         return this.events.iterator();
@@ -61,9 +66,11 @@ public class Sample
         while (iterator.hasNext()) {
             out = out + iterator.next().toString();
 
+            /*
             if (iterator.hasNext()) {
                 out = out + ", ";
             }
+            */
         }
 
         out = out + " -- Major category: " + this.getMajorCategory() + "}";
@@ -176,7 +183,7 @@ public class Sample
         return true;
     }
 
-    public HashMap<String, Sample> buildSubsets(String property)
+    public Map<String, Sample> buildSubsets(String property)
     {
         HashMap<String, Sample> subsets = new HashMap<String, Sample>();
 
@@ -192,5 +199,56 @@ public class Sample
         }
 
         return subsets;
+    }
+
+    public List<Sample> split(int parts)
+    {
+        int size = this.size() / parts;
+        List<Sample> samples = new ArrayList<Sample>(parts);
+
+        for (int i = 0; i < parts; i++) {
+            List<Integer> sampleIds = this.createSampleIds(size);
+
+            Sample sample = new Sample(this.getFields());
+            Iterator<Integer> iterator = sampleIds.iterator();
+            while (iterator.hasNext()) {
+                Integer current = iterator.next();
+                sample.addEvent(this.getEvent(current.intValue()));
+            }
+
+            samples.add(i, sample);
+        }
+
+        return samples;
+    }
+
+    protected List<Integer> createSampleIds(int size)
+    {
+        List<Integer> sampleIds = new ArrayList<Integer>(size);
+        for (int i = 0; i < size; i++) {
+            Integer random = new Integer(
+                ThreadLocalRandom.current().nextInt(0, this.size())
+            );
+
+            if (!sampleIds.contains(random)) {
+                sampleIds.add(random);
+            }
+        }
+
+        return sampleIds;
+    }
+
+    public Sample getComplement(Sample sample)
+    {
+        Sample complement = new Sample(this.getFields());
+        Iterator<Event> iterator = this.iterator();
+        while (iterator.hasNext()) {
+            Event current = iterator.next();
+            if (!sample.contains(current)) {
+                complement.addEvent(current);
+            }
+        }
+
+        return complement;
     }
 }

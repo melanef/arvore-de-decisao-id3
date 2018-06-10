@@ -3,17 +3,18 @@ package utils;
 import java.lang.Integer;
 import java.lang.Math;
 import java.lang.String;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
+import java.util.Map;
 
 import models.Event;
 import models.Sample;
 import tree.Node;
 
-public class ID3
+public class ID3 implements AIAlgorithm
 {
     public final static double LOG2 = Math.log(2.0);
     protected Sample sample;
@@ -35,7 +36,7 @@ public class ID3
 
     public void setSample(Sample sample)
     {
-        this.sample = sample;
+        this.sample = new Sample(sample);
     }
 
     public void buildTree()
@@ -56,11 +57,15 @@ public class ID3
         }
 
         double biggestGain = 0.0;
-        String biggestGainField = "";
+        String biggestGainField = null;
         Iterator<String> fieldIterator = fields.iterator();
         while (fieldIterator.hasNext()) {
             String currentField = fieldIterator.next();
             double currentFieldGain = ID3.gain(sample, currentField);
+
+            if (biggestGainField == null) {
+                biggestGainField = new String(currentField);
+            }
 
             if (currentFieldGain > biggestGain) {
                 biggestGainField = new String(currentField);
@@ -78,7 +83,7 @@ public class ID3
         }
 
         root = new Node(biggestGainField);
-        HashMap<String, Sample> rootSubsets = sample.buildSubsets(biggestGainField);
+        Map<String, Sample> rootSubsets = sample.buildSubsets(biggestGainField);
         Iterator<String> subsetIterator = rootSubsets.keySet().iterator();
         while (subsetIterator.hasNext()) {
             String currentKey = subsetIterator.next();
@@ -99,14 +104,23 @@ public class ID3
             return rules;
         }
 
-        rules.addAll(this.root.getRules(this.categoryName, new Stack<String>()));
+        rules.addAll(this.root.getRules(this.categoryName, new ArrayDeque<String>()));
 
         return rules;
     }
 
+    public Classifier getClassifier()
+    {
+        if (root == null) {
+            this.buildTree();
+        }
+
+        return new Classifier(this.root, this.sample.getMajorCategory());
+    }
+
     public static double entropy(Sample sample)
     {
-        HashMap<String, Integer> frequencies = new HashMap<String, Integer>();
+        Map<String, Integer> frequencies = new HashMap<String, Integer>();
 
         Iterator<Event> eventIterator = sample.iterator();
         while (eventIterator.hasNext()) {
@@ -137,7 +151,7 @@ public class ID3
     {
         double gain = ID3.entropy(sample);
 
-        HashMap<String, Sample> subsets = sample.buildSubsets(property);
+        Map<String, Sample> subsets = sample.buildSubsets(property);
 
         Iterator<String> subsetIterator = subsets.keySet().iterator();
         while (subsetIterator.hasNext()) {
