@@ -48,7 +48,7 @@ public class Adult
     public static void main(String [] args)
     {
         if (args.length < 1) {
-            System.out.println("É necessário informar o caminho do arquivo de dados como parâmetro de execução");
+            System.out.println("E necessario informar o caminho do arquivo de dados como parametro de execucao");
             return;
         }
 
@@ -80,7 +80,7 @@ public class Adult
             }
         }
         catch(FileNotFoundException exception) {
-            System.out.println("Arquivo de dados não encontrado");
+            System.out.println("Arquivo de dados nao encontrado");
         }
         catch (IOException exception) {
             System.out.println("Erro na leitura do arquivo de dados");
