@@ -43,10 +43,11 @@ public class RFoldCrossValidation
 
         List<Classifier> classifiers = new ArrayList<Classifier>(this.r);
         for (int i = 0; i < this.r; i++) {
-            Sample current = samples.get(i);
+            Sample validation = samples.get(i);
+            Sample current = this.sample.getComplement(validation);
             this.algorithm.setSample(current);
             Classifier classifier = this.algorithm.getClassifier();
-            error = error + classifier.error(this.sample.getComplement(current));
+            error = error + classifier.error(validation);
         }
 
         this.error = error / 10.0;
