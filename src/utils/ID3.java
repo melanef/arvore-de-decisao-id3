@@ -88,7 +88,11 @@ public class ID3 implements AIAlgorithm
         while (subsetIterator.hasNext()) {
             String currentKey = subsetIterator.next();
             Sample subset = rootSubsets.get(currentKey);
-            root.assignNewBranch(currentKey, subset, ID3.buildSubTree(subset, remainingFields));
+
+            Node subTree = ID3.buildSubTree(subset, remainingFields);
+            subTree.setSample(subset);
+            subTree.setValue(currentKey);
+            root.add(subTree);
         }
 
         return root;

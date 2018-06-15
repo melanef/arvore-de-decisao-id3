@@ -9,33 +9,37 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import comparators.BranchComparator;
+import comparators.NodeComparator;
 import models.Event;
 import models.Sample;
 import utils.ID3;
 
 public class Node
 {
+    protected String value;
     protected String property;
-    protected Set<Branch> branches = null;
+    protected Set<Node> nodes = null;
+    protected Sample sample;
 
     public Node(String property)
     {
         this.property = property;
-        this.branches = new TreeSet<Branch>(new BranchComparator());
+        this.nodes = new TreeSet<Node>(new NodeComparator());
+    }
+
+    public Node(String property, Sample sample)
+    {
+        this(property);
+        this.sample = new Sample(sample);
     }
 
     public Node(Node node)
     {
         if (node != null) {
             this.property = node.getProperty();
-            this.branches = node.getBranches();
+            this.nodes = node.getNodes();
+            this.sample = node.getSample();
         }
-    }
-
-    public void add(Branch branch)
-    {
-        this.branches.add(branch);
     }
 
     public String getProperty()
@@ -43,33 +47,55 @@ public class Node
         return new String(this.property);
     }
 
-    public Set<Branch> getBranches()
+    public String getMajorCategory()
     {
-        Set<Branch> branches = new TreeSet<Branch>(new BranchComparator());
-        branches.addAll(this.branches);
-        return branches;
+        return new String(this.sample.getMajorCategory());
     }
 
-    public void assignNewBranch(String value, Sample sample, Node node)
+    public String getValue()
     {
-        Branch newBranch = new Branch(value, sample, node);
-        this.add(newBranch);
+        return new String(this.value);
+    }
+
+    public void setValue(String value)
+    {
+        this.value = new String(value);
+    }
+
+    public Sample getSample()
+    {
+        return new Sample(this.sample);
+    }
+
+    public void setSample(Sample sample)
+    {
+        this.sample = new Sample(sample);
+    }
+
+    public Set<Node> getNodes()
+    {
+        Set<Node> nodes = new TreeSet<Node>(new NodeComparator());
+        nodes.addAll(this.nodes);
+        return nodes;
+    }
+
+    public void add(Node node)
+    {
+        this.nodes.add(node);
     }
 
     public ArrayList<String> getRules(String categoryName, Deque<String> parentRules)
     {
         ArrayList<String> rules = new ArrayList<String>();
 
-        Iterator<Branch> iterator = this.branches.iterator();
+        Iterator<Node> iterator = this.nodes.iterator();
         while (iterator.hasNext()) {
-            Branch current = iterator.next();
-            Node currentNode = current.getNode();
+            Node current = iterator.next();
 
             Deque<String> currentRules = new ArrayDeque<String>(parentRules);
 
             String currentRule = this.property + "=" + current.getValue();
-            if (currentNode == null) {
-
+            if (current == null) {
                 String rule = "";
                 while (!currentRules.isEmpty()) {
                     rule = "(" + currentRules.pop() + ") ^ " + rule;
@@ -83,38 +109,33 @@ public class Node
             }
 
             currentRules.push(currentRule);
-            rules.addAll(currentNode.getRules(categoryName, currentRules));
+            rules.addAll(current.getRules(categoryName, currentRules));
         }
 
         return rules;
     }
 
-    public Branch getBranch(String propertyValue)
+    public Node getNode(String value)
     {
-        Iterator<Branch> iterator = this.branches.iterator();
+        Iterator<Node> iterator = this.nodes.iterator();
         while (iterator.hasNext()) {
-            Branch current = iterator.next();
-            if (current.getValue().equals(propertyValue)) {
-                return new Branch(current);
+            Node current = iterator.next();
+            if (current.getValue().equals(value)) {
+                return new Node(current);
             }
         }
 
         return null;
     }
 
-    public String getCategory(Event event, String previousMajorCategory)
+    public String getCategory(Event event)
     {
-        Branch eventBranch = this.getBranch(event.get(this.property));
+        Node child = this.getNode(event.get(this.property));
 
-        if (eventBranch == null) {
-            return new String(previousMajorCategory);
+        if (child == null) {
+            return new String(this.getMajorCategory());
         }
 
-        Node nextNode = eventBranch.getNode();
-        if (nextNode == null) {
-            return eventBranch.getMajorCategory();
-        }
-
-        return nextNode.getCategory(event, eventBranch.getMajorCategory());
+        return child.getCategory(event);
     }
 }

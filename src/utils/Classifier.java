@@ -23,7 +23,7 @@ public class Classifier
             return new String(this.majorCategory);
         }
 
-        return this.tree.getCategory(event, this.majorCategory);
+        return this.tree.getCategory(event);
     }
 
     public double error(Sample testSample)
