@@ -92,6 +92,7 @@ public class ID3 implements AIAlgorithm
             Node subTree = ID3.buildSubTree(subset, remainingFields);
             subTree.setSample(subset);
             subTree.setValue(currentKey);
+            subTree.setParent(root);
             root.add(subTree);
         }
 

@@ -20,6 +20,7 @@ public class Node
     protected String property;
     protected Set<Node> nodes = null;
     protected Sample sample;
+    protected Node parent = null;
 
     public Node(String property)
     {
@@ -37,8 +38,10 @@ public class Node
     {
         if (node != null) {
             this.property = node.getProperty();
+            this.value = node.getValue();
             this.nodes = node.getNodes();
             this.sample = node.getSample();
+            this.parent = node.getParent();
         }
     }
 
@@ -79,9 +82,32 @@ public class Node
         return nodes;
     }
 
+    public Node getNode(String value)
+    {
+        Iterator<Node> iterator = this.nodes.iterator();
+        while (iterator.hasNext()) {
+            Node current = iterator.next();
+            if (current.getValue().equals(value)) {
+                return new Node(current);
+            }
+        }
+
+        return null;
+    }
+
     public void add(Node node)
     {
         this.nodes.add(node);
+    }
+
+    public Node getParent()
+    {
+        return this.parent;
+    }
+
+    public void setParent(Node parent)
+    {
+        this.parent = parent;
     }
 
     public ArrayList<String> getRules(String categoryName, Deque<String> parentRules)
@@ -113,19 +139,6 @@ public class Node
         }
 
         return rules;
-    }
-
-    public Node getNode(String value)
-    {
-        Iterator<Node> iterator = this.nodes.iterator();
-        while (iterator.hasNext()) {
-            Node current = iterator.next();
-            if (current.getValue().equals(value)) {
-                return new Node(current);
-            }
-        }
-
-        return null;
     }
 
     public String getCategory(Event event)
