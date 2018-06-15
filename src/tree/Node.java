@@ -45,8 +45,21 @@ public class Node
         }
     }
 
+    public String toString()
+    {
+        return "Node" + " - Property: " + (this.property != null ? this.property : "NULL") +
+                        " - Value: " + (this.value != null ? this.value : "NULL") +
+                        " - Sample size: " + this.sample.size() +
+                        " - Nodes size: " + this.nodes.size()
+        ;
+    }
+
     public String getProperty()
     {
+        if (this.property == null) {
+            return null;
+        }
+
         return new String(this.property);
     }
 
@@ -57,6 +70,10 @@ public class Node
 
     public String getValue()
     {
+        if (this.value == null) {
+            return null;
+        }
+
         return new String(this.value);
     }
 
@@ -143,6 +160,10 @@ public class Node
 
     public String getCategory(Event event)
     {
+        if (this.property == null) {
+            return this.getMajorCategory();
+        }
+
         Node child = this.getNode(event.get(this.property));
 
         if (child == null) {

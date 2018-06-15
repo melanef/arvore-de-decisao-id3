@@ -13,6 +13,8 @@ public class Classifier
 
     public Classifier(Node tree, String majorCategory)
     {
+        /*System.out.println(tree.toString());*/
+
         this.tree = new Node(tree);
         this.majorCategory = new String(majorCategory);
     }

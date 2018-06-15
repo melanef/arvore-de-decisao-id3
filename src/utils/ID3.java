@@ -46,14 +46,8 @@ public class ID3 implements AIAlgorithm
 
     public static Node buildSubTree(Sample sample, List<String> fields)
     {
-        Node root = null;
-
-        if (fields.size() <= 0) {
-            return root;
-        }
-
-        if (sample.hasSingleCategory()) {
-            return root;
+        if (fields.size() <= 0 || sample.hasSingleCategory()) {
+            return new Node(null, sample);
         }
 
         double biggestGain = 0.0;
@@ -82,7 +76,7 @@ public class ID3 implements AIAlgorithm
             }
         }
 
-        root = new Node(biggestGainField);
+        Node root = new Node(biggestGainField, sample);
         Map<String, Sample> rootSubsets = sample.buildSubsets(biggestGainField);
         Iterator<String> subsetIterator = rootSubsets.keySet().iterator();
         while (subsetIterator.hasNext()) {
@@ -90,10 +84,11 @@ public class ID3 implements AIAlgorithm
             Sample subset = rootSubsets.get(currentKey);
 
             Node subTree = ID3.buildSubTree(subset, remainingFields);
-            subTree.setSample(subset);
-            subTree.setValue(currentKey);
-            subTree.setParent(root);
-            root.add(subTree);
+            if (subTree != null) {
+                subTree.setValue(currentKey);
+                subTree.setParent(root);
+                root.add(subTree);
+            }
         }
 
         return root;
