@@ -207,35 +207,15 @@ public class Sample
         List<Sample> samples = new ArrayList<Sample>(parts);
 
         for (int i = 0; i < parts; i++) {
-            List<Integer> sampleIds = this.createSampleIds(size);
-
-            Sample sample = new Sample(this.getFields());
-            Iterator<Integer> iterator = sampleIds.iterator();
-            while (iterator.hasNext()) {
-                Integer current = iterator.next();
-                sample.addEvent(this.getEvent(current.intValue()));
+            samples.add(i, new Sample(this.getFields()));
+            for (int j = 0; j < this.size(); j++) {
+                if (j % parts == i) {
+                    samples.get(i).addEvent(this.getEvent(j));
+                }
             }
-
-            samples.add(i, sample);
         }
 
         return samples;
-    }
-
-    protected List<Integer> createSampleIds(int size)
-    {
-        List<Integer> sampleIds = new ArrayList<Integer>(size);
-        for (int i = 0; i < size; i++) {
-            Integer random = new Integer(
-                ThreadLocalRandom.current().nextInt(0, this.size())
-            );
-
-            if (!sampleIds.contains(random)) {
-                sampleIds.add(random);
-            }
-        }
-
-        return sampleIds;
     }
 
     public Sample getComplement(Sample sample)

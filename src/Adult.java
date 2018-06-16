@@ -8,9 +8,12 @@ import java.util.Iterator;
 
 import models.Event;
 import models.Sample;
+import utils.AIAlgorithm;
+import utils.Classifier;
 import utils.Discretizer;
 import utils.ID3;
 import utils.Interval;
+import utils.Pruning;
 import utils.RFoldCrossValidation;
 
 public class Adult
@@ -62,11 +65,16 @@ public class Adult
             Adult.sample = Discretizer.discretizeProperty(Adult.sample, Adult.CONTINUOUS_FIELDS[i]);
         }
 
+        AIAlgorithm id3 = new ID3("Income");
+
         System.out.println("Dados discretizados");
 
-        RFoldCrossValidation validator = new RFoldCrossValidation(Adult.R, new ID3("Income"), Adult.sample, Adult.TRUST_INTERVAL_FACTOR);
+        RFoldCrossValidation validator = new RFoldCrossValidation(Adult.R, id3, Adult.sample, Adult.TRUST_INTERVAL_FACTOR);
         System.out.println("Erro obtido: " + validator.error());
         System.out.println("Erro estimado no intervalo: " + validator.errorInterval().toString());
+
+        Pruning pruning = new Pruning(id3, Adult.sample);
+        Classifier pruned = pruning.prune();
     }
 
     public static int readInput(String filepath)

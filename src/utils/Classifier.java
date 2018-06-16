@@ -13,10 +13,19 @@ public class Classifier
 
     public Classifier(Node tree, String majorCategory)
     {
-        /*System.out.println(tree.toString());*/
-
         this.tree = new Node(tree);
         this.majorCategory = new String(majorCategory);
+    }
+
+    public Classifier(Classifier classifier)
+    {
+        this.tree = new Node(classifier.getTree());
+        this.majorCategory = new String(classifier.getMajorCategory());
+    }
+
+    public String getMajorCategory()
+    {
+        return this.majorCategory;
     }
 
     public String getCategory(Event event)
@@ -50,6 +59,6 @@ public class Classifier
 
     public Node getTree()
     {
-        return new Node(this.tree);
+        return this.tree;
     }
 }

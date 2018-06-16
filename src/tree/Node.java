@@ -54,6 +54,41 @@ public class Node
         ;
     }
 
+    public boolean equals(Object o)
+    {
+        if (o instanceof Node) {
+            Node n = (Node) o;
+
+            if (n.getProperty() == null && this.property != null) {
+                return false;
+            }
+
+            if (n.getProperty() != null && this.property == null) {
+                return false;
+            }
+
+            if (!n.getProperty().equals(this.property)) {
+                return false;
+            }
+
+            if (n.getValue() == null && this.value != null) {
+                return false;
+            }
+
+            if (n.getValue() != null && this.value == null) {
+                return false;
+            }
+
+            if (!n.getValue().equals(this.value)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public String getProperty()
     {
         if (this.property == null) {
@@ -115,6 +150,11 @@ public class Node
     public void add(Node node)
     {
         this.nodes.add(node);
+    }
+
+    public void remove(Node node)
+    {
+        this.nodes.remove(node);
     }
 
     public Node getParent()
