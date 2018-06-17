@@ -20,12 +20,14 @@ public class ID3 implements AIAlgorithm
     protected Sample sample;
     protected Node root;
     protected String categoryName;
+    protected Logger logger;
 
     public ID3(String categoryName)
     {
         this.sample = null;
         this.categoryName = categoryName;
         this.root = null;
+        this.logger = null;
     }
 
     public ID3(String categoryName, Sample sample)
@@ -39,12 +41,31 @@ public class ID3 implements AIAlgorithm
         this.sample = new Sample(sample);
     }
 
-    public void buildTree()
-    {
-        this.root = ID3.buildSubTree(this.sample, this.sample.getFieldList());
+    public void setLogger(Logger logger) {
+        this.logger = logger;
     }
 
-    public static Node buildSubTree(Sample sample, List<String> fields)
+    public void init()
+    {
+        this.buildTree();
+    }
+
+    public void buildTree()
+    {
+        if (this.logger != null) {
+            this.logger.onInit(new Classifier(null, this.sample.getMajorCategory(), this.categoryName));
+        }
+
+        this.root = this.createNode(this.sample, this.sample.getFieldList());
+
+        if (this.logger != null) {
+            this.logger.afterAddNode(new Classifier(this.root, this.sample.getMajorCategory(), this.categoryName));
+        }
+
+        this.buildSubTree(this.root, this.sample.getFieldList());
+    }
+
+    public Node createNode(Sample sample, List<String> fields)
     {
         if (fields.size() <= 0 || sample.hasSingleCategory()) {
             return new Node(null, sample);
@@ -67,55 +88,57 @@ public class ID3 implements AIAlgorithm
             }
         }
 
-        List<String> remainingFields = new ArrayList<String>();
-        fieldIterator = fields.iterator();
-        while (fieldIterator.hasNext()) {
-            String currentField = fieldIterator.next();
-            if (!currentField.equals(biggestGainField)) {
-                remainingFields.add(currentField);
-            }
-        }
-
-        Node root = new Node(biggestGainField, sample);
-        Map<String, Sample> rootSubsets = sample.buildSubsets(biggestGainField);
-        Iterator<String> subsetIterator = rootSubsets.keySet().iterator();
-        while (subsetIterator.hasNext()) {
-            String currentKey = subsetIterator.next();
-            Sample subset = rootSubsets.get(currentKey);
-
-            Node subTree = ID3.buildSubTree(subset, remainingFields);
-            if (subTree != null) {
-                subTree.setValue(currentKey);
-                subTree.setParent(root);
-                root.add(subTree);
-            }
-        }
-
-        return root;
+        Node node = new Node(biggestGainField, sample);
+        return node;
     }
 
-    public ArrayList<String> getRules()
+    public void buildSubTree(Node root, List<String> fields)
     {
-        ArrayList<String> rules = new ArrayList<String>();
-        if (this.root == null) {
-            String rule = this.categoryName + ": " + this.sample.getMajorCategory();
-            rules.add(rule);
+        if (fields.size() > 0 && root.getProperty() != null) {
+            String field = root.getProperty();
+            Map<String, Sample> rootSubsets = root.getSample().buildSubsets(field);
+            Iterator<String> subsetIterator = rootSubsets.keySet().iterator();
 
-            return rules;
+            List<String> remainingFields = new ArrayList<String>();
+            Iterator<String> fieldIterator = fields.iterator();
+            while (fieldIterator.hasNext()) {
+                String currentField = fieldIterator.next();
+                if (!currentField.equals(field)) {
+                    remainingFields.add(currentField);
+                }
+            }
+
+            while (subsetIterator.hasNext()) {
+                String currentKey = subsetIterator.next();
+                Sample subset = rootSubsets.get(currentKey);
+
+                Node subTree = this.createNode(subset, remainingFields);
+                if (subTree != null) {
+                    subTree.setValue(currentKey);
+                    subTree.setParent(root);
+                    root.add(subTree);
+                }
+
+                if (this.logger != null) {
+                    this.logger.afterAddNode(new Classifier(this.root, this.sample.getMajorCategory(), this.categoryName));
+                }
+            }
+
+            Iterator<Node> nodeIterator = root.getNodes().iterator();
+            while (nodeIterator.hasNext()) {
+                Node currentNode = nodeIterator.next();
+                this.buildSubTree(currentNode, remainingFields);
+            }
         }
-
-        rules.addAll(this.root.getRules(this.categoryName, new ArrayDeque<String>()));
-
-        return rules;
     }
 
     public Classifier getClassifier()
     {
-        if (root == null) {
+        if (this.root == null) {
             this.buildTree();
         }
 
-        return new Classifier(this.root, this.sample.getMajorCategory());
+        return new Classifier(this.root, this.sample.getMajorCategory(), this.categoryName);
     }
 
     public static double entropy(Sample sample)

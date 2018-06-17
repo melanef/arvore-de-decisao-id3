@@ -1,5 +1,6 @@
 package utils;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +22,7 @@ public class Pruning
 
     protected ArrayList<Node> nodes;
     protected ArrayList<Double> errors;
+    protected AccuracyLogger logger;
 
     public Pruning(AIAlgorithm algorithm, Sample sample)
     {
@@ -31,9 +33,18 @@ public class Pruning
         this.validationSample = samples.get(1);
         this.testSample = samples.get(2);
 
+        this.logger = new AccuracyLogger(this.trainingSample, this.testSample);
+
         this.algorithm.setSample(trainingSample);
+        this.algorithm.setLogger(this.logger);
+        this.algorithm.init();
         this.fullClassifier = this.algorithm.getClassifier();
-        this.fullClassifierError = this.fullClassifier.error(this.validationSample);
+
+        System.out.println("Árvore criada com " + this.fullClassifier.getNodeCount() + " nós");
+
+        this.fullClassifierError = this.fullClassifier.error(this.testSample);
+
+        System.out.println("Erro base: " + this.fullClassifierError);
 
         this.nodes = new ArrayList<Node>();
         this.errors = new ArrayList<Double>();
@@ -41,20 +52,19 @@ public class Pruning
 
     public Classifier prune()
     {
+        System.out.println("Iniciando poda");
+
         Classifier classifier = new Classifier(this.fullClassifier);
         Node root = classifier.getTree();
 
-        this.evaluate(root);
-
-        System.out.println(this.errors);
-        /*
-
         double overallBestError = this.fullClassifierError;
+        this.evaluate(root, classifier);
+
+        System.out.println("Erros calculados");
+
         int bestErrorIndex = 0;
         double bestError = this.errors.get(0).doubleValue();
-        boolean firstRun = true;
-        while (overallBestError > bestError || firstRun) {
-            firstRun = false;
+        while (true) {
             for (int i = 1; i < this.errors.size(); i++) {
                 double error = this.errors.get(i).doubleValue();
                 if (error < bestError) {
@@ -63,15 +73,23 @@ public class Pruning
                 }
             }
 
+            if (bestError >= overallBestError) {
+                System.out.println("Best error: " + bestError + " -- Overall Best Error: " + overallBestError);
+                break;
+            }
+
             Node bestErrorNode = this.nodes.get(bestErrorIndex);
             Node parent = bestErrorNode.getParent();
             parent.remove(bestErrorNode);
-            this.nodes.remove(bestErrorIndex);
-            this.errors.remove(bestErrorIndex);
+
+            this.nodes = new ArrayList<Node>();
+            this.errors = new ArrayList<Double>();
 
             overallBestError = bestError;
 
-            this.evaluate(parent);
+            System.out.println("Melhor erro agora é " + overallBestError);
+
+            this.evaluate(root, classifier);
 
             if (this.nodes.size() == 0) {
                 break;
@@ -81,31 +99,33 @@ public class Pruning
             bestError = this.errors.get(0).doubleValue();
         }
 
-        */
-
         return classifier;
     }
 
-    public void evaluate(Node subtree)
+    public void evaluate(Node subtree, Classifier classifier)
     {
         Set<Node> nodes = subtree.getNodes();
         if (nodes == null || nodes.size() == 0) {
-            this.evaluateLeafNode(subtree);
+            this.evaluateLeafNode(subtree, classifier);
         }
 
-        Iterator<Node> iterator = nodes.iterator();
-        while (iterator.hasNext()) {
-            Node current = iterator.next();
-            this.evaluate(subtree);
+        Object childrenNodes[] = nodes.toArray();
+        for (int i = 0; i < childrenNodes.length; i++) {
+            Node node = (Node) childrenNodes[i];
+            this.evaluate(node, classifier);
         }
     }
 
-    protected void evaluateLeafNode(Node leaf)
+    protected void evaluateLeafNode(Node leaf, Classifier classifier)
     {
+        //System.out.println("No folha");
         Node parent = leaf.getParent();
         parent.remove(leaf);
 
-        double error = this.fullClassifier.error(this.validationSample);
+        double error = classifier.error(this.validationSample);
+
+        //System.out.println("Erro sem um no: " + error);
+
         this.nodes.add(leaf);
         this.errors.add(new Double(error));
 

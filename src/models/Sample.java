@@ -3,11 +3,11 @@ package models;
 import java.lang.Integer;
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class Sample
 {
@@ -205,6 +205,7 @@ public class Sample
     {
         int size = this.size() / parts;
         List<Sample> samples = new ArrayList<Sample>(parts);
+        Collections.shuffle(this.events);
 
         for (int i = 0; i < parts; i++) {
             samples.add(i, new Sample(this.getFields()));

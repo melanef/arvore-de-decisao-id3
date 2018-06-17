@@ -3,12 +3,13 @@ import java.io.FileReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.String;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import models.Event;
 import models.Sample;
 import utils.ID3;
+import utils.Classifier;
 
 public class PlayTennis
 {
@@ -32,8 +33,8 @@ public class PlayTennis
         PlayTennis.readInput(args[0]);
         ID3 builder = new ID3("PlayTennis");
         builder.setSample(PlayTennis.sample);
-        builder.buildTree();
-        PlayTennis.printRules(builder);
+        Classifier classifier = builder.getClassifier();
+        PlayTennis.printRules(classifier);
     }
 
     public static void readInput(String filepath)
@@ -53,9 +54,9 @@ public class PlayTennis
         }
     }
 
-    public static void printRules(ID3 built)
+    public static void printRules(Classifier built)
     {
-        ArrayList<String> rules = built.getRules();
+        List<String> rules = built.getRules();
         Iterator<String> iterator = rules.iterator();
         while (iterator.hasNext()) {
             System.out.println(iterator.next());

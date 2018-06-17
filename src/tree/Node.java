@@ -129,9 +129,11 @@ public class Node
 
     public Set<Node> getNodes()
     {
+        /*
         Set<Node> nodes = new TreeSet<Node>(new NodeComparator());
         nodes.addAll(this.nodes);
-        return nodes;
+        */
+        return this.nodes;
     }
 
     public Node getNode(String value)
@@ -140,7 +142,8 @@ public class Node
         while (iterator.hasNext()) {
             Node current = iterator.next();
             if (current.getValue().equals(value)) {
-                return new Node(current);
+                /*return new Node(current);*/
+                return current;
             }
         }
 
@@ -152,9 +155,9 @@ public class Node
         this.nodes.add(node);
     }
 
-    public void remove(Node node)
+    public boolean remove(Node node)
     {
-        this.nodes.remove(node);
+        return this.nodes.remove(node);
     }
 
     public Node getParent()
@@ -171,6 +174,24 @@ public class Node
     {
         ArrayList<String> rules = new ArrayList<String>();
 
+        if (this.nodes.size() == 0) {
+            Deque<String> currentRules = new ArrayDeque<String>(parentRules);
+
+            String rule = "";
+            while (!currentRules.isEmpty()) {
+                if (rule.equals("")) {
+                    rule = "(" + currentRules.pop() + ")";
+                    continue;
+                }
+
+                rule = "(" + currentRules.pop() + ") ^ " + rule;
+            }
+
+            rule = "IF " + rule + " THEN " + categoryName + ": " + this.getMajorCategory();
+            rules.add(rule);
+            return rules;
+        }
+
         Iterator<Node> iterator = this.nodes.iterator();
         while (iterator.hasNext()) {
             Node current = iterator.next();
@@ -178,19 +199,6 @@ public class Node
             Deque<String> currentRules = new ArrayDeque<String>(parentRules);
 
             String currentRule = this.property + "=" + current.getValue();
-            if (current == null) {
-                String rule = "";
-                while (!currentRules.isEmpty()) {
-                    rule = "(" + currentRules.pop() + ") ^ " + rule;
-                }
-
-                rule = rule + "(" + currentRule + ")";
-
-                rule = "IF " + rule + " THEN " + categoryName + ": " + current.getMajorCategory();
-                rules.add(rule);
-                continue;
-            }
-
             currentRules.push(currentRule);
             rules.addAll(current.getRules(categoryName, currentRules));
         }
@@ -211,5 +219,17 @@ public class Node
         }
 
         return child.getCategory(event);
+    }
+
+    public int getNodeCount()
+    {
+        int nodeCount = 1;
+
+        Iterator<Node> iterator = this.nodes.iterator();
+        while (iterator.hasNext()) {
+            nodeCount = nodeCount + iterator.next().getNodeCount();
+        }
+
+        return nodeCount;
     }
 }

@@ -3,8 +3,8 @@ import java.io.FileReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.String;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import models.Event;
 import models.Sample;
@@ -67,12 +67,19 @@ public class Adult
 
         AIAlgorithm id3 = new ID3("Income");
 
-        System.out.println("Dados discretizados");
-
+        /*
+        System.out.println("*************************************************");
+        System.out.println("K-Fold CrossValidation");
+        System.out.println("*************************************************");
         RFoldCrossValidation validator = new RFoldCrossValidation(Adult.R, id3, Adult.sample, Adult.TRUST_INTERVAL_FACTOR);
         System.out.println("Erro obtido: " + validator.error());
         System.out.println("Erro estimado no intervalo: " + validator.errorInterval().toString());
+        System.out.println("");
+        */
 
+        System.out.println("*************************************************");
+        System.out.println("Poda");
+        System.out.println("*************************************************");
         Pruning pruning = new Pruning(id3, Adult.sample);
         Classifier pruned = pruning.prune();
     }
@@ -99,9 +106,9 @@ public class Adult
         return linesRead;
     }
 
-    public static void printRules(ID3 built)
+    public static void printRules(Classifier built)
     {
-        ArrayList<String> rules = built.getRules();
+        List<String> rules = built.getRules();
         Iterator<String> iterator = rules.iterator();
         while (iterator.hasNext()) {
             System.out.println(iterator.next());

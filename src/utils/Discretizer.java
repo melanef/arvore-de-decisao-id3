@@ -47,7 +47,6 @@ public class Discretizer
 
         for (int i = 0; i < breakpoints.size(); i++) {
             Double breakpoint = breakpoints.get(i);
-            Double lower = null;
             Interval [] intervals = new Interval[2];
             intervals[0] = new Interval(null, breakpoint);
             intervals[1] = new Interval(breakpoint, null);

@@ -50,7 +50,7 @@ public class RFoldCrossValidation
             error = error + classifier.error(validation);
         }
 
-        this.error = error / 10.0;
+        this.error = error / this.r;
     }
 
     public double stimateError()
