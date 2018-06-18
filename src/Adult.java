@@ -67,7 +67,6 @@ public class Adult
 
         AIAlgorithm id3 = new ID3("Income");
 
-        /*
         System.out.println("*************************************************");
         System.out.println("K-Fold CrossValidation");
         System.out.println("*************************************************");
@@ -75,13 +74,19 @@ public class Adult
         System.out.println("Erro obtido: " + validator.error());
         System.out.println("Erro estimado no intervalo: " + validator.errorInterval().toString());
         System.out.println("");
-        */
 
         System.out.println("*************************************************");
         System.out.println("Poda");
         System.out.println("*************************************************");
         Pruning pruning = new Pruning(id3, Adult.sample);
         Classifier pruned = pruning.prune();
+
+        pruning.getLogger().output();
+
+        System.out.println("*************************************************");
+        System.out.println("Regras resultantes após poda");
+        System.out.println("*************************************************");
+        Adult.printRules(pruned);
     }
 
     public static int readInput(String filepath)

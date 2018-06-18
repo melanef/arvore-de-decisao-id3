@@ -40,9 +40,7 @@ public class Pruning
         this.algorithm.init();
         this.fullClassifier = this.algorithm.getClassifier();
 
-        System.out.println("Árvore criada com " + this.fullClassifier.getNodeCount() + " nós");
-
-        this.fullClassifierError = this.fullClassifier.error(this.testSample);
+        this.fullClassifierError = this.fullClassifier.error(this.validationSample);
 
         System.out.println("Erro base: " + this.fullClassifierError);
 
@@ -56,8 +54,12 @@ public class Pruning
 
         Classifier classifier = new Classifier(this.fullClassifier);
         Node root = classifier.getTree();
+        int classifierNodeCount = classifier.getNodeCount();
 
         double overallBestError = this.fullClassifierError;
+
+        this.logger.afterPrune(classifier.accuracy(this.testSample), classifierNodeCount);
+
         this.evaluate(root, classifier);
 
         System.out.println("Erros calculados");
@@ -81,13 +83,12 @@ public class Pruning
             Node bestErrorNode = this.nodes.get(bestErrorIndex);
             Node parent = bestErrorNode.getParent();
             parent.remove(bestErrorNode);
+            classifierNodeCount--;
 
             this.nodes = new ArrayList<Node>();
             this.errors = new ArrayList<Double>();
 
-            overallBestError = bestError;
-
-            System.out.println("Melhor erro agora é " + overallBestError);
+            this.logger.afterPrune(classifier.accuracy(this.testSample), classifierNodeCount);
 
             this.evaluate(root, classifier);
 
@@ -118,17 +119,19 @@ public class Pruning
 
     protected void evaluateLeafNode(Node leaf, Classifier classifier)
     {
-        //System.out.println("No folha");
         Node parent = leaf.getParent();
         parent.remove(leaf);
 
         double error = classifier.error(this.validationSample);
 
-        //System.out.println("Erro sem um no: " + error);
-
         this.nodes.add(leaf);
         this.errors.add(new Double(error));
 
         parent.add(leaf);
+    }
+
+    public AccuracyLogger getLogger()
+    {
+        return this.logger;
     }
 }

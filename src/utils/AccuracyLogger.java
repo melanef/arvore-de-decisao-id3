@@ -25,15 +25,28 @@ public class AccuracyLogger implements Logger
 
     public void onInit(Classifier classifier)
     {
-        this.trainingAccuracy.add(0, new Double(classifier.accuracy(this.trainingSample)));
-        this.testAccuracy.add(0, new Double(classifier.accuracy(this.testSample)));
+        double trainingSampleAccuracy = classifier.accuracy(this.trainingSample);
+        double testSampleAccuracy = classifier.accuracy(this.testSample);
+
+        this.trainingAccuracy.add(0, new Double(trainingSampleAccuracy));
+        this.testAccuracy.add(0, new Double(testSampleAccuracy));
+        this.pruneAccuracy.add(0, new Double(testSampleAccuracy));
     }
 
     public void afterAddNode(Classifier classifier)
     {
+        double trainingSampleAccuracy = classifier.accuracy(this.trainingSample);
+        double testSampleAccuracy = classifier.accuracy(this.testSample);
+
         int nodeCount = classifier.getNodeCount();
-        this.trainingAccuracy.add(nodeCount, new Double(classifier.accuracy(this.trainingSample)));
-        this.testAccuracy.add(nodeCount, new Double(classifier.accuracy(this.testSample)));
+        this.trainingAccuracy.add(nodeCount, new Double(trainingSampleAccuracy));
+        this.testAccuracy.add(nodeCount, new Double(testSampleAccuracy));
+        this.pruneAccuracy.add(nodeCount, new Double(testSampleAccuracy));
+    }
+
+    public void afterPrune(Double accuracy, int count)
+    {
+        this.pruneAccuracy.add(count, accuracy);
     }
 
     public List<Double> getTrainingAccuracy()
@@ -49,5 +62,19 @@ public class AccuracyLogger implements Logger
     public List<Double> getPruneAccuracy()
     {
         return this.pruneAccuracy;
+    }
+
+    public void output()
+    {
+        for (int i = 0; i < this.trainingAccuracy.size(); i++) {
+            Double trainingAccuracy = this.trainingAccuracy.get(i);
+            Double testAccuracy = this.testAccuracy.get(i);
+            Double pruneAccuracy = this.pruneAccuracy.get(i);
+            System.out.println(i + "; "
+             + ((trainingAccuracy != null) ? trainingAccuracy : "") + "; "
+             + ((testAccuracy != null) ? testAccuracy : "") + "; "
+             + ((pruneAccuracy != null) ? pruneAccuracy : "") + "; "
+            );
+        }
     }
 }
