@@ -46,6 +46,7 @@ public class AccuracyLogger implements Logger
 
     public void afterPrune(Double accuracy, int count)
     {
+        this.pruneAccuracy.remove(count);
         this.pruneAccuracy.add(count, accuracy);
     }
 
