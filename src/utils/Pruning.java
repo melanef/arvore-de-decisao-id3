@@ -80,6 +80,8 @@ public class Pruning
                 break;
             }
 
+            overallBestError = bestError;
+
             Node bestErrorNode = this.nodes.get(bestErrorIndex);
             Node parent = bestErrorNode.getParent();
             parent.remove(bestErrorNode);
