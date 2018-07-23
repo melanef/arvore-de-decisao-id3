@@ -4,8 +4,11 @@ import java.lang.Integer;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import models.Event;
 import models.Sample;
@@ -103,5 +106,62 @@ public class Classifier
         }
 
         return this.tree.getNodeCount();
+    }
+
+    public List<String> sortedRules(Sample testSample)
+    {
+        Iterator<Event> eventIterator = testSample.iterator();
+        while (eventIterator.hasNext()) {
+            Event currentEvent = eventIterator.next();
+            this.checkRule(currentEvent, currentEvent.getCategory());
+        }
+
+        List<Node> leafs = this.tree.getAllNodes();
+
+        ArrayList<String> rules = new ArrayList<String>();
+
+        while (leafs.size() > 0) {
+            boolean found = true;
+
+            Node best = null;
+            int bestIndex = 0;
+            double bestScore = 0.0;
+            for (int i = 0; i < leafs.size(); i++) {
+                Node current = leafs.get(i);
+                int total = current.getHits() + current.getMisses();
+                if (total == 0) {
+                    leafs.remove(i);
+                    continue;
+                }
+
+                double currentScore = current.getHits() * current.getHits() / total;
+
+                if (best == null) {
+                    best = current;
+                    bestIndex = i;
+                    bestScore = currentScore;
+                }
+
+                if (currentScore > bestScore) {
+                    best = current;
+                    bestScore = currentScore;
+                    bestIndex = i;
+                }
+            }
+
+            if (best != null) {
+                rules.add(new String(best.getRule(this.getCategoryName()) + " - " + best.getHits() + "/" + (best.getHits() + best.getMisses())));
+                leafs.remove(bestIndex);
+            }
+        }
+
+        return rules;
+    }
+
+    protected void checkRule(Event event, String expectedCategory)
+    {
+        if (this.tree != null) {
+            this.tree.getCategory(event, expectedCategory);
+        }
     }
 }

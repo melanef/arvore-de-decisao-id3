@@ -48,7 +48,17 @@ public class Pruning
         this.errors = new ArrayList<Double>();
     }
 
+    public Sample getTestSample()
+    {
+        return new Sample(this.testSample);
+    }
+
     public Classifier prune()
+    {
+        return this.prune(false);
+    }
+
+    public Classifier prune(boolean full)
     {
         System.out.println("Iniciando poda");
 
@@ -66,6 +76,7 @@ public class Pruning
 
         int bestErrorIndex = 0;
         double bestError = this.errors.get(0).doubleValue();
+        int currentNodeCount, previousNodeCount = classifierNodeCount;
         while (true) {
             for (int i = 1; i < this.errors.size(); i++) {
                 double error = this.errors.get(i).doubleValue();
@@ -75,22 +86,27 @@ public class Pruning
                 }
             }
 
-            if (bestError >= overallBestError) {
+            if (overallBestError >= bestError) {
+                overallBestError = bestError;
+            } else if (full == false) {
                 System.out.println("Best error: " + bestError + " -- Overall Best Error: " + overallBestError);
                 break;
             }
 
-            overallBestError = bestError;
-
             Node bestErrorNode = this.nodes.get(bestErrorIndex);
             Node parent = bestErrorNode.getParent();
             parent.remove(bestErrorNode);
-            classifierNodeCount--;
+
+            currentNodeCount = classifier.getNodeCount();
 
             this.nodes = new ArrayList<Node>();
             this.errors = new ArrayList<Double>();
 
-            this.logger.afterPrune(classifier.accuracy(this.testSample), classifierNodeCount);
+            for (int i = currentNodeCount; i < previousNodeCount; i++) {
+                this.logger.afterPrune(classifier.accuracy(this.testSample), i);
+            }
+
+            previousNodeCount = currentNodeCount;
 
             this.evaluate(root, classifier);
 
@@ -108,20 +124,26 @@ public class Pruning
     public void evaluate(Node subtree, Classifier classifier)
     {
         Set<Node> nodes = subtree.getNodes();
-        if (nodes == null || nodes.size() == 0) {
-            this.evaluateLeafNode(subtree, classifier);
-        }
 
         Object childrenNodes[] = nodes.toArray();
         for (int i = 0; i < childrenNodes.length; i++) {
             Node node = (Node) childrenNodes[i];
             this.evaluate(node, classifier);
         }
+
+        //if (nodes == null || nodes.size() == 0) {
+            this.evaluateLeafNode(subtree, classifier);
+        //}
     }
 
     protected void evaluateLeafNode(Node leaf, Classifier classifier)
     {
         Node parent = leaf.getParent();
+
+        if (parent == null) {
+            return;
+        }
+
         parent.remove(leaf);
 
         double error = classifier.error(this.validationSample);

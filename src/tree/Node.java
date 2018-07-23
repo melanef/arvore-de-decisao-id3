@@ -22,10 +22,15 @@ public class Node
     protected Sample sample;
     protected Node parent = null;
 
+    protected int hits;
+    protected int misses;
+
     public Node(String property)
     {
         this.property = property;
         this.nodes = new TreeSet<Node>(new NodeComparator());
+        this.hits = 0;
+        this.misses = 0;
     }
 
     public Node(String property, Sample sample)
@@ -42,6 +47,8 @@ public class Node
             this.nodes = node.getNodes();
             this.sample = node.getSample();
             this.parent = node.getParent();
+            this.hits = node.getHits();
+            this.misses = node.getMisses();
         }
     }
 
@@ -136,6 +143,16 @@ public class Node
         return this.nodes;
     }
 
+    public int getHits()
+    {
+        return this.hits;
+    }
+
+    public int getMisses()
+    {
+        return this.misses;
+    }
+
     public Node getNode(String value)
     {
         Iterator<Node> iterator = this.nodes.iterator();
@@ -174,29 +191,26 @@ public class Node
     {
         ArrayList<String> rules = new ArrayList<String>();
 
-        if (this.nodes.size() == 0) {
-            Deque<String> currentRules = new ArrayDeque<String>(parentRules);
+        Deque<String> currentRules = new ArrayDeque<String>(parentRules);
 
-            String rule = "";
-            while (!currentRules.isEmpty()) {
-                if (rule.equals("")) {
-                    rule = "(" + currentRules.pop() + ")";
-                    continue;
-                }
-
-                rule = "(" + currentRules.pop() + ") ^ " + rule;
+        String rule = "";
+        while (!currentRules.isEmpty()) {
+            if (rule.equals("")) {
+                rule = "(" + currentRules.pop() + ")";
+                continue;
             }
 
-            rule = "IF " + rule + " THEN " + categoryName + ": " + this.getMajorCategory();
-            rules.add(rule);
-            return rules;
+            rule = "(" + currentRules.pop() + ") ^ " + rule;
         }
+
+        rule = "IF " + rule + " THEN " + categoryName + ": " + this.getMajorCategory();
+        rules.add(rule);
 
         Iterator<Node> iterator = this.nodes.iterator();
         while (iterator.hasNext()) {
             Node current = iterator.next();
 
-            Deque<String> currentRules = new ArrayDeque<String>(parentRules);
+            currentRules = new ArrayDeque<String>(parentRules);
 
             String currentRule = this.property + "=" + current.getValue();
             currentRules.push(currentRule);
@@ -208,17 +222,42 @@ public class Node
 
     public String getCategory(Event event)
     {
+        return this.getCategory(event, null);
+    }
+
+    public String getCategory(Event event, String expectedCategory)
+    {
         if (this.property == null) {
-            return this.getMajorCategory();
+            String result = new String(this.getMajorCategory());
+
+            if (expectedCategory != null) {
+                if (result.equals(expectedCategory)) {
+                    this.hits++;
+                } else {
+                    this.misses++;
+                }
+            }
+
+            return result;
         }
 
         Node child = this.getNode(event.get(this.property));
 
         if (child == null) {
-            return new String(this.getMajorCategory());
+            String result = new String(this.getMajorCategory());
+
+            if (expectedCategory != null) {
+                if (result.equals(expectedCategory)) {
+                    this.hits++;
+                } else {
+                    this.misses++;
+                }
+            }
+
+            return result;
         }
 
-        return child.getCategory(event);
+        return child.getCategory(event, expectedCategory);
     }
 
     public int getNodeCount()
@@ -231,5 +270,57 @@ public class Node
         }
 
         return nodeCount;
+    }
+
+    public ArrayList<Node> getAllNodes()
+    {
+        ArrayList<Node> nodes = new ArrayList<Node>();
+
+        nodes.add(this);
+
+        Iterator<Node> iterator = this.nodes.iterator();
+        while (iterator.hasNext()) {
+            Node current = iterator.next();
+            nodes.addAll(current.getAllNodes());
+        }
+
+        return nodes;
+    }
+
+    public String getRule(String categoryName)
+    {
+        Deque<String> parts = new ArrayDeque<String>();
+        Node current = this;
+        Node parent = current.getParent();
+        while (current != null && parent != null) {
+            String property = parent.getProperty();
+            if (property != null) {
+                parts.addFirst(new String(property + "=" + current.getValue()));
+            }
+
+            current = current.getParent();
+
+            if (current == null) {
+                break;
+            }
+
+            parent = current.getParent();
+        }
+
+        String rule = null;
+        while (!parts.isEmpty()) {
+            if (rule == null) {
+                rule = "IF (" + parts.pop() + ")";
+                continue;
+            }
+
+            rule = rule + " ^ (" + parts.pop() + ")";
+        }
+
+        if (rule == null) {
+            rule = "IF (true)";
+        }
+
+        return new String(rule + " THEN " + categoryName + ": " + this.getMajorCategory());
     }
 }

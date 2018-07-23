@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.Integer;
 import java.lang.String;
 import java.util.Iterator;
 import java.util.List;
@@ -57,9 +58,20 @@ public class Adult
 
         int linesRead = Adult.readInput(args[0]);
 
+        int sample_factor = 1;
+        if (args.length >= 2) {
+            sample_factor = (new Integer(args[1])).intValue();
+        }
+
         System.out.println("Linhas lidas no arquivo: " + linesRead);
         System.out.println("Eventos adicionados: " + Adult.sample.size());
         System.out.println("Missing data: " + (linesRead - Adult.sample.size()));
+
+        if (sample_factor != 1) {
+            System.out.println("Aplicando fator divisor para teste/desenvolvimento: " + sample_factor);
+            Adult.sample = Adult.sample.split(sample_factor).get(0);
+            System.out.println("Novo tamanho da amostra: " + Adult.sample.size());
+        }
 
         for (int i = 0; i < Adult.CONTINUOUS_FIELDS.length; i++) {
             Adult.sample = Discretizer.discretizeProperty(Adult.sample, Adult.CONTINUOUS_FIELDS[i]);
@@ -67,30 +79,34 @@ public class Adult
 
         AIAlgorithm id3 = new ID3("Income");
 
-        /*
-        System.out.println("*************************************************");
+        System.out.println("*****************************************************");
         System.out.println("K-Fold CrossValidation");
-        System.out.println("*************************************************");
+        System.out.println("*****************************************************");
         RFoldCrossValidation validator = new RFoldCrossValidation(Adult.R, id3, Adult.sample, Adult.TRUST_INTERVAL_FACTOR);
         System.out.println("Erro obtido: " + validator.error());
         System.out.println("Erro estimado no intervalo: " + validator.errorInterval().toString());
         System.out.println("");
-        */
 
-        System.out.println("*************************************************");
-        System.out.println("Poda");
-        System.out.println("*************************************************");
+        System.out.println("*****************************************************");
+        System.out.println("Geração de dados para o gráfico");
+        System.out.println("*****************************************************");
         Pruning pruning = new Pruning(id3, Adult.sample);
+        pruning.prune(true);
+        System.out.println("");
+        pruning.getLogger().output();
+        System.out.println("");
+
+        System.out.println("*****************************************************");
+        System.out.println("Poda");
+        System.out.println("*****************************************************");
+        pruning = new Pruning(id3, Adult.sample);
         Classifier pruned = pruning.prune();
 
-        pruning.getLogger().output();
-
-        /*
-        System.out.println("*************************************************");
-        System.out.println("Regras resultantes após poda");
-        System.out.println("*************************************************");
-        Adult.printRules(pruned);
-        */
+        System.out.println("*****************************************************");
+        System.out.println("Regras resultantes após poda ordenadas por acurácia");
+        System.out.println("*****************************************************");
+        Adult.printSortedRules(pruned, pruning.getTestSample());
+        System.out.println("");
     }
 
     public static int readInput(String filepath)
@@ -118,6 +134,15 @@ public class Adult
     public static void printRules(Classifier built)
     {
         List<String> rules = built.getRules();
+        Iterator<String> iterator = rules.iterator();
+        while (iterator.hasNext()) {
+            System.out.println(iterator.next());
+        }
+    }
+
+    public static void printSortedRules(Classifier built, Sample testSample)
+    {
+        List<String> rules = built.sortedRules(testSample);
         Iterator<String> iterator = rules.iterator();
         while (iterator.hasNext()) {
             System.out.println(iterator.next());
